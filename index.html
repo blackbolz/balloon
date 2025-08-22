@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Pacifico&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 50%, #87CEFA 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            user-select: none;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            z-index: 100;
+            position: relative;
+        }
+
+        /* Make header clickthrough in gun mode */
+        body.gun-mode .header {
+            pointer-events: none;
+        }
+
+        .title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 4.5rem;
+            font-weight: normal;
+            background: linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCF7F, #4ECDC4, #45B7D1, #96CEB4, #FECA57);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbow-shift 3s ease-in-out infinite;
+            margin-bottom: 10px;
+            letter-spacing: 12px;
+            text-shadow: 
+                2px 2px 0px rgba(255, 255, 255, 0.8),
+                4px 4px 0px rgba(255, 182, 193, 0.6),
+                6px 6px 0px rgba(255, 182, 193, 0.4),
+                8px 8px 20px rgba(0, 0, 0, 0.3);
+            transform: perspective(500px) rotateX(15deg);
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+        }
+
+        @keyframes rainbow-shift {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .subtitle {
+            font-family: 'Pacifico', cursive;
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #FF69B4, #FFB347, #98FB98, #87CEEB);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: normal;
+            font-style: normal;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-top: 5px;
+            transform: rotate(-2deg);
+        }
+
+        .controls {
+            position: fixed;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        /* Make controls clickthrough in gun mode except for the buttons themselves */
+        body.gun-mode .controls {
+            pointer-events: none;
+        }
+
+        body.gun-mode .control-btn {
+            pointer-events: auto;
+        }
+
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            border: none !important;
+            background: none !important;
+            background-color: transparent !important;
+            cursor: pointer;
+            display: block;
+            transition: all 0.3s ease;
+            background-size: 70px 70px !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            background-color: transparent !important;
+        }
+
+        .control-btn:focus {
+            outline: none !important;
+            background-color: transparent !important;
+        }
+
+        .control-btn:active {
+            background-color: transparent !important;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .control-btn.active {
+            background: #FFD700;
+            border-color: #FFB000;
+            transform: scale(1.1);
+        }
+
+        .balloon-mode {
+            cursor: url('images/balloon1.png') 16 24, auto;
+        }
+
+        .balloon-btn {
+            background-image: url('images/balloon1.png');
+        }
+
+        .gun-btn {
+            background-image: url('images/gun.png') !important;
+            background-color: transparent !important;
+            background-size: 85px 85px !important;
+        }
+
+        .gun-btn:hover {
+            transform: scale(1.1);
+            background-color: transparent !important;
+        }
+
+        .gun-btn.active {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 25px rgba(255, 255, 255, 0.6));
+            background-color: transparent !important;
+        }
+
+        .gun-btn:focus, .gun-btn:active {
+            background-color: transparent !important;
+        }
+
+        .normal-btn {
+            background-image: url('images/cursor.png') !important;
+            background-color: transparent !important;
+            background-size: 50px 50px !important;
+        }
+
+        .normal-btn:hover {
+            transform: scale(1.1);
+            background-color: transparent !important;
+        }
+
+        .normal-btn.active {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 25px rgba(255, 255, 255, 0.6));
+            background-color: transparent !important;
+        }
+
+        .normal-btn:focus, .normal-btn:active {
+            background-color: transparent !important;
+        }
+
+        .gun-mode {
+            cursor: url('images/scope.png') 16 16, crosshair;
+        }
+
+        .balloon {
+            position: absolute;
+            opacity: 0.9;
+            animation: float-up 15s linear forwards;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 10;
+            /* More precise hit detection */
+            border-radius: 50%;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0px);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(-150vh);
+                opacity: 0.9;
+            }
+        }
+
+        .pop-effect {
+            position: absolute;
+            pointer-events: none;
+            font-size: 2rem;
+            color: #FF6B6B;
+            font-weight: bold;
+            animation: pop-animation 0.8s ease-out forwards;
+        }
+
+        @keyframes pop-animation {
+            0% {
+                opacity: 1;
+                transform: scale(0.5);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+
+        .clouds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cloud {
+            position: absolute;
+            animation: drift 20s linear infinite;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .cloud1 {
+            width: 180px;
+            height: 100px;
+            top: 15%;
+            animation-duration: 35s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud2 {
+            width: 180px;
+            height: 100px;
+            top: 10%;
+            animation-duration: 30s;
+            animation-delay: -10s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud3 {
+            width: 180px;
+            height: 100px;
+            top: 25%;
+            animation-duration: 40s;
+            animation-delay: -20s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud4 {
+            width: 160px;
+            height: 90px;
+            top: 5%;
+            animation-duration: 45s;
+            animation-delay: -15s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud5 {
+            width: 200px;
+            height: 110px;
+            top: 35%;
+            animation-duration: 28s;
+            animation-delay: -5s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud6 {
+            width: 150px;
+            height: 85px;
+            top: 45%;
+            animation-duration: 38s;
+            animation-delay: -25s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud7 {
+            width: 170px;
+            height: 95px;
+            top: 8%;
+            animation-duration: 42s;
+            animation-delay: -18s;
+            background-image: url('images/cloud2.png');
+        }
+
+        .cloud8 {
+            width: 190px;
+            height: 105px;
+            top: 55%;
+            animation-duration: 33s;
+            animation-delay: -12s;
+            background-image: url('images/cloud2.png');
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateX(-200px);
+            }
+            100% {
+                transform: translateX(calc(100vw + 200px));
+            }
+        }
+
+        .nav-buttons {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .nav-buttons.clickable {
+            pointer-events: auto;
+        }
+
+        /* Make nav buttons clickthrough in gun mode unless they're clickable */
+        body.gun-mode .nav-buttons:not(.clickable) {
+            pointer-events: none;
+        }
+
+        body.gun-mode .nav-buttons.clickable {
+            pointer-events: none;
+        }
+
+        body.gun-mode .nav-buttons.clickable .nav-btn {
+            pointer-events: auto;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #fff;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #4A90E2;
+            font-weight: bold;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            height: 32px;
+        }
+
+        .nav-buttons:not(.clickable) .nav-btn {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn-icon {
+            width: 22px;
+            height: 22px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        /* Button text positioning */
+        .nav-btn span {
+            margin-left: -11px;
+        }
+
+        /* DEX text specific positioning */
+        .nav-btn2 span {
+            margin-left: -8px;
+        }
+
+        /* Community text specific positioning */
+        .nav-btn3 span {
+            margin-left: -4px;
+        }
+
+        /* DEX text specific positioning */
+        .nav-btn4 span {
+            margin-left: -6px;
+        }
+
+        /* Individual button width adjustments */
+        .nav-btn1 {
+            width: 85px;
+        }
+
+        .nav-btn2 {
+            width: 105px;
+        }
+
+        .nav-btn3 {
+            width: 100px;
+        }
+
+        .nav-btn4 {
+            width: 80px;
+        }
+
+        /* Icon specific positioning and sizing */
+        .nav-btn1 .nav-btn-icon { 
+            background-image: url('images/pump.png');
+            margin-left: 0px;
+        }
+
+        .nav-btn2 .nav-btn-icon { 
+            background-image: url('images/dex.png');
+            margin-left: -1px;
+            width: 26px;
+            height: 26px;
+        }
+
+        .nav-btn3 .nav-btn-icon { 
+            background-image: url('images/x.png');
+            margin-left: -3px;
+        }
+        
+        .nav-btn4 .nav-btn-icon { 
+            background-image: url('images/copy.png'); 
+             margin-left: -3px;
+        }
+
+        .score {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4A90E2;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .score-item {
+            display: block;
+        }
+
+        .missed-counter {
+            color: #FF6B6B;
+            font-size: 1rem;
+        }
+
+        /* Make score clickthrough in gun mode */
+        body.gun-mode .score {
+            pointer-events: none;
+        }
+
+        /* Copy notification styles */
+        .copy-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .copy-notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-buttons">
+        <a href="https://example1.com" class="nav-btn nav-btn1" target="_blank">
+            <div class="nav-btn-icon"></div>
+            <span>Pump fun</span>
+        </a>
+        <a href="https://example2.com" class="nav-btn nav-btn2" target="_blank">
+            <div class="nav-btn-icon"></div>
+            <span>Dexscreener</span>
+        </a>
+        <a href="https://example3.com" class="nav-btn nav-btn3" target="_blank">
+            <div class="nav-btn-icon"></div>
+            <span>Community</span>
+        </a>
+        <div class="nav-btn nav-btn4" id="copyBtn">
+            <div class="nav-btn-icon"></div>
+            <span>Copy CA</span>
+        </div>
+    </div>
+
+    <div class="copy-notification" id="copyNotification">
+        Text copied to clipboard!
+    </div>
+
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+        <div class="cloud cloud4"></div>
+        <div class="cloud cloud5"></div>
+        <div class="cloud cloud6"></div>
+        <div class="cloud cloud7"></div>
+        <div class="cloud cloud8"></div>
+    </div>
+
+    <div class="header">
+        <h1 class="title">BALLOON</h1>
+        <p class="subtitle">This will always fly</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-btn normal-btn active" title="Normal Mode"></div>
+        <div class="control-btn gun-btn" title="Pop Balloons"></div>
+    </div>
+
+    <div class="score">
+        <div class="score-item">Popped: <span id="score">0</span></div>
+        <div class="score-item missed-counter">Missed: <span id="missed">0</span></div>
+    </div>
+
+    <script>
+        let currentMode = 'balloon';
+        let balloons = [];
+        let score = 0;
+        let missedCount = 0;
+        let balloonIdCounter = 0;
+
+        const normalBtn = document.querySelector('.normal-btn');
+        const gunBtn = document.querySelector('.gun-btn');
+        const scoreDisplay = document.getElementById('score');
+        const missedDisplay = document.getElementById('missed');
+        const body = document.body;
+        const copyBtn = document.getElementById('copyBtn');
+        const copyNotification = document.getElementById('copyNotification');
+
+        const balloonImages = ['images/balloon1.png', 'images/balloon2.png', 'images/balloon3.png', 'images/balloon4.png'];
+
+        // Copy function for button 4
+        copyBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            try {
+                await navigator.clipboard.writeText('coming soon');
+                
+                // Show notification
+                copyNotification.classList.add('show');
+                
+                // Hide notification after 2 seconds
+                setTimeout(() => {
+                    copyNotification.classList.remove('show');
+                }, 2000);
+                
+            } catch (err) {
+                // Fallback for browsers that don't support clipboard API
+                console.error('Failed to copy text: ', err);
+                
+                // Create a temporary textarea element
+                const textArea = document.createElement('textarea');
+                textArea.value = 'coming soon';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                // Show notification
+                copyNotification.classList.add('show');
+                setTimeout(() => {
+                    copyNotification.classList.remove('show');
+                }, 2000);
+            }
+        });
+
+        // Mode switching
+        normalBtn.addEventListener('click', () => {
+            currentMode = 'balloon';
+            normalBtn.classList.add('active');
+            gunBtn.classList.remove('active');
+            body.className = 'balloon-mode';
+            
+            // Enable nav buttons
+            document.querySelector('.nav-buttons').classList.add('clickable');
+        });
+
+        gunBtn.addEventListener('click', () => {
+            currentMode = 'gun';
+            gunBtn.classList.add('active');
+            normalBtn.classList.remove('active');
+            body.className = 'gun-mode';
+            
+            // Disable nav buttons
+            document.querySelector('.nav-buttons').classList.remove('clickable');
+        });
+
+        // Initialize with balloon mode
+        body.className = 'balloon-mode';
+        document.querySelector('.nav-buttons').classList.add('clickable');
+
+        // Create balloon function
+        function createBalloon(x, y) {
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            balloon.id = 'balloon-' + balloonIdCounter++;
+            
+            const randomImage = balloonImages[Math.floor(Math.random() * balloonImages.length)];
+            balloon.style.backgroundImage = `url('${randomImage}')`;
+            balloon.dataset.balloonType = randomImage; // Store balloon type for color reference
+            balloon.dataset.counted = 'false'; // Track if balloon has been counted as missed
+            
+            // Randomize balloon size (50% to 150% of original size)
+            const sizeMultiplier = 0.5 + Math.random() * 1.0; // 0.5 to 1.5
+            const balloonWidth = 180 * sizeMultiplier;
+            const balloonHeight = 240 * sizeMultiplier;
+            balloon.style.width = balloonWidth + 'px';
+            balloon.style.height = balloonHeight + 'px';
+            
+            balloon.style.left = x - (balloonWidth / 2) + 'px';
+            balloon.style.bottom = '-300px'; // Start much lower off-screen
+            
+            // Add slight random horizontal drift
+            const drift = (Math.random() - 0.5) * 100;
+            balloon.style.setProperty('--drift', drift + 'px');
+            
+            document.body.appendChild(balloon);
+            balloons.push(balloon);
+
+            // Set up intersection observer for missed balloon counting
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    // Check if balloon is crossing the virtual line at the top
+                    const balloonRect = entry.boundingClientRect;
+                    if (balloonRect.bottom <= 50 && balloon.dataset.counted === 'false') { // Virtual line at 50px from top
+                        balloon.dataset.counted = 'true';
+                        missedCount++;
+                        missedDisplay.textContent = missedCount;
+                        observer.unobserve(balloon); // Stop observing this balloon
+                    }
+                });
+            }, {
+                threshold: 0,
+                rootMargin: '0px'
+            });
+
+            observer.observe(balloon);
+
+            // Remove balloon after animation completes naturally
+            balloon.addEventListener('animationend', () => {
+                if (balloon.parentNode) {
+                    balloon.remove();
+                    balloons = balloons.filter(b => b !== balloon);
+                    observer.unobserve(balloon);
+                }
+            });
+
+            // More generous fallback removal
+            setTimeout(() => {
+                if (balloon.parentNode) {
+                    balloon.remove();
+                    balloons = balloons.filter(b => b !== balloon);
+                    observer.unobserve(balloon);
+                }
+            }, 18000); // Much longer safety buffer
+
+            return balloon;
+        }
+
+        // Improved balloon hit detection
+        function getBalloonAtPoint(x, y) {
+            // Get all elements at the click point
+            const elementsAtPoint = document.elementsFromPoint(x, y);
+            
+            // Find the first balloon in the list
+            for (let element of elementsAtPoint) {
+                if (element.classList.contains('balloon')) {
+                    // Check if click is within the balloon's circular shape
+                    const rect = element.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    const radius = Math.min(rect.width, rect.height) / 2 * 0.8; // 80% of radius for more precise detection
+                    
+                    const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                    
+                    if (distance <= radius) {
+                        return element;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Pop balloon function
+        function popBalloon(balloon, event) {
+            if (!balloon.parentNode) return;
+            
+            // Mark balloon as counted so it doesn't count as missed
+            balloon.dataset.counted = 'true';
+            
+            // Generate random multiplier between 0.1x and 1000x
+            const multiplier = 0.1 + Math.random() * 999.9; // 0.1 to 1000
+            const multiplierText = multiplier.toFixed(1) + 'x';
+            
+            // Get balloon type for color
+            const balloonType = balloon.dataset.balloonType;
+            let color;
+            
+            if (balloonType.includes('balloon1.png')) {
+                color = '#FF0000'; // Red
+            } else if (balloonType.includes('balloon2.png')) {
+                color = '#00FF00'; // Green
+            } else if (balloonType.includes('balloon3.png')) {
+                color = '#0000FF'; // Blue
+            } else if (balloonType.includes('balloon4.png')) {
+                color = '#FFFF00'; // Yellow
+            } else {
+                color = '#FF6B6B'; // Default red if something goes wrong
+            }
+            
+            // Create pop effect with multiplier
+            const popEffect = document.createElement('div');
+            popEffect.className = 'pop-effect';
+            popEffect.textContent = multiplierText;
+            popEffect.style.left = event.clientX - 30 + 'px';
+            popEffect.style.top = event.clientY - 20 + 'px';
+            popEffect.style.color = color;
+            
+            // Size based on multiplier value
+            if (multiplier >= 500) {
+                popEffect.style.fontSize = '2.5rem';
+                popEffect.style.fontWeight = 'bold';
+            } else if (multiplier >= 100) {
+                popEffect.style.fontSize = '2.2rem';
+                popEffect.style.fontWeight = 'bold';
+            } else if (multiplier >= 10) {
+                popEffect.style.fontSize = '2rem';
+            } else {
+                popEffect.style.fontSize = '1.8rem';
+            }
+            
+            document.body.appendChild(popEffect);
+
+            // Remove pop effect
+            setTimeout(() => {
+                if (popEffect.parentNode) {
+                    popEffect.remove();
+                }
+            }, 800);
+
+            // Remove balloon
+            balloon.remove();
+            balloons = balloons.filter(b => b !== balloon);
+            
+            // Update score
+            score++;
+            scoreDisplay.textContent = score;
+        }
+
+        // Click handler
+        document.addEventListener('click', (event) => {
+            // Don't trigger on control buttons or nav buttons in normal mode
+            if (currentMode === 'balloon' && (event.target.closest('.controls') || event.target.closest('.nav-buttons'))) {
+                return;
+            }
+
+            // In gun mode, don't trigger on control buttons but allow clicks through other UI elements
+            if (currentMode === 'gun' && event.target.closest('.control-btn')) {
+                return;
+            }
+
+            if (currentMode === 'balloon') {
+                createBalloon(event.clientX, event.clientY);
+            } else if (currentMode === 'gun') {
+                // Use improved balloon detection
+                const clickedBalloon = getBalloonAtPoint(event.clientX, event.clientY);
+                if (clickedBalloon) {
+                    popBalloon(clickedBalloon, event);
+                }
+            }
+        });
+
+        // Auto-generate some balloons for demo
+        setInterval(() => {
+            if (Math.random() < 0.2) { // 20% chance every 100ms (reduced from 30%)
+                const x = Math.random() * window.innerWidth;
+                createBalloon(x, window.innerHeight);
+            }
+        }, 100);
+    </script>
+</body>
+</html>
