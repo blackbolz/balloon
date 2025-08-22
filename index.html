@@ -141,7 +141,7 @@
         }
 
         .balloon-mode {
-            cursor: url('images/balloon1.png') 16 24, auto;
+            cursor: url('images/balloon1.png') 16 54, auto;
         }
 
         .balloon-btn {
@@ -191,7 +191,7 @@
         }
 
         .gun-mode {
-            cursor: url('images/scope.png') 16 16, crosshair;
+            cursor: url('images/scope.png') 16 46, crosshair;
         }
 
         .balloon {
@@ -258,6 +258,7 @@
             background-position: center;
         }
 
+        /* Cloud type 2 (original) */
         .cloud1 {
             width: 180px;
             height: 100px;
@@ -275,48 +276,12 @@
             background-image: url('images/cloud2.png');
         }
 
-        .cloud3 {
-            width: 180px;
-            height: 100px;
-            top: 25%;
-            animation-duration: 40s;
-            animation-delay: -20s;
-            background-image: url('images/cloud2.png');
-        }
-
-        .cloud4 {
-            width: 160px;
-            height: 90px;
-            top: 5%;
-            animation-duration: 45s;
-            animation-delay: -15s;
-            background-image: url('images/cloud2.png');
-        }
-
         .cloud5 {
             width: 200px;
             height: 110px;
             top: 35%;
             animation-duration: 28s;
             animation-delay: -5s;
-            background-image: url('images/cloud2.png');
-        }
-
-        .cloud6 {
-            width: 150px;
-            height: 85px;
-            top: 45%;
-            animation-duration: 38s;
-            animation-delay: -25s;
-            background-image: url('images/cloud2.png');
-        }
-
-        .cloud7 {
-            width: 170px;
-            height: 95px;
-            top: 8%;
-            animation-duration: 42s;
-            animation-delay: -18s;
             background-image: url('images/cloud2.png');
         }
 
@@ -327,6 +292,44 @@
             animation-duration: 33s;
             animation-delay: -12s;
             background-image: url('images/cloud2.png');
+        }
+
+        /* Cloud type 3 (new) */
+        .cloud3 {
+            width: 160px;
+            height: 90px;
+            top: 25%;
+            animation-duration: 40s;
+            animation-delay: -20s;
+            background-image: url('images/cloud3.png');
+        }
+
+        .cloud6 {
+            width: 150px;
+            height: 85px;
+            top: 45%;
+            animation-duration: 38s;
+            animation-delay: -25s;
+            background-image: url('images/cloud3.png');
+        }
+
+        /* Cloud type 4 (new) */
+        .cloud4 {
+            width: 160px;
+            height: 90px;
+            top: 5%;
+            animation-duration: 45s;
+            animation-delay: -15s;
+            background-image: url('images/cloud4.png');
+        }
+
+        .cloud7 {
+            width: 170px;
+            height: 95px;
+            top: 8%;
+            animation-duration: 42s;
+            animation-delay: -18s;
+            background-image: url('images/cloud4.png');
         }
 
         @keyframes drift {
@@ -549,14 +552,19 @@
     </div>
 
     <div class="clouds">
+        <!-- Cloud type 2 (original) -->
         <div class="cloud cloud1"></div>
         <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-        <div class="cloud cloud4"></div>
         <div class="cloud cloud5"></div>
-        <div class="cloud cloud6"></div>
-        <div class="cloud cloud7"></div>
         <div class="cloud cloud8"></div>
+        
+        <!-- Cloud type 3 (new) -->
+        <div class="cloud cloud3"></div>
+        <div class="cloud cloud6"></div>
+        
+        <!-- Cloud type 4 (new) -->
+        <div class="cloud cloud4"></div>
+        <div class="cloud cloud7"></div>
     </div>
 
     <div class="header">
