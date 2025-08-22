@@ -104,8 +104,14 @@
         }
 
         .main-icon:hover {
-            transform: scale(1.05);
+            transform: scale(1.1) translateY(-5px);
             filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.4));
+        }
+
+        /* Only show hover effect in balloon mode (cursor), not gun mode */
+        body.gun-mode .main-icon:hover {
+            transform: none;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
         }
 
         @keyframes gentle-float {
@@ -592,11 +598,11 @@
         }
 
         .nav-btn2 {
-            width: 105px;
+            width: 109px;
         }
 
         .nav-btn3 {
-            width: 100px;
+            width: 105px;
         }
 
         .nav-btn4 {
