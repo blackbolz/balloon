@@ -90,6 +90,38 @@
             transform: rotate(-2deg);
         }
 
+        .main-icon {
+            width: 400px;
+            height: 400px;
+            background-image: url('images/icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 30px auto;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+            transition: all 0.3s ease;
+            animation: gentle-float 4s ease-in-out infinite;
+        }
+
+        .main-icon:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 0.4));
+        }
+
+        @keyframes gentle-float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Make main icon clickthrough in gun mode */
+        body.gun-mode .main-icon {
+            pointer-events: none;
+        }
+
         .controls {
             position: fixed;
             left: 30px;
@@ -235,6 +267,7 @@
             color: #FF6B6B;
             font-weight: bold;
             animation: pop-animation 0.8s ease-out forwards;
+            z-index: 1500;
         }
 
         @keyframes pop-animation {
@@ -248,6 +281,70 @@
             100% {
                 opacity: 0;
                 transform: scale(1.5);
+            }
+        }
+
+        /* Explosion Effect Styles */
+        .explosion {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1400;
+        }
+
+        .explosion-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: explode 0.6s ease-out forwards;
+        }
+
+        .explosion-particle.large {
+            width: 12px;
+            height: 12px;
+        }
+
+        .explosion-particle.small {
+            width: 5px;
+            height: 5px;
+        }
+
+        @keyframes explode {
+            0% {
+                opacity: 1;
+                transform: scale(1) translate(0, 0);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.2) translate(var(--dx), var(--dy));
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5) translate(calc(var(--dx) * 2), calc(var(--dy) * 2));
+            }
+        }
+
+        /* Ring explosion effect */
+        .explosion-ring {
+            position: absolute;
+            border: 3px solid;
+            border-radius: 50%;
+            animation: ring-expand 0.5s ease-out forwards;
+            opacity: 0.8;
+        }
+
+        @keyframes ring-expand {
+            0% {
+                width: 10px;
+                height: 10px;
+                opacity: 0.8;
+                transform: translate(-50%, -50%);
+            }
+            100% {
+                width: 80px;
+                height: 80px;
+                opacity: 0;
+                transform: translate(-50%, -50%);
             }
         }
 
@@ -632,6 +729,7 @@
     <div class="header">
         <h1 class="title">BALLOON</h1>
         <p class="subtitle">This will fly forever</p>
+        <div class="main-icon"></div>
     </div>
 
     <div class="controls">
@@ -852,6 +950,61 @@
         updateDayNightCycle();
         setInterval(updateDayNightCycle, 1000); // Update every second
 
+        // Explosion effect function
+        function createExplosion(x, y, color) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            
+            // Create ring effect
+            const ring = document.createElement('div');
+            ring.className = 'explosion-ring';
+            ring.style.borderColor = color;
+            ring.style.left = '0px';
+            ring.style.top = '0px';
+            explosion.appendChild(ring);
+            
+            // Create particles
+            const particleCount = 12;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle';
+                
+                // Random particle size
+                const sizes = ['small', '', 'large'];
+                const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+                if (randomSize) particle.classList.add(randomSize);
+                
+                // Set particle color
+                particle.style.backgroundColor = color;
+                
+                // Calculate random direction
+                const angle = (i / particleCount) * 2 * Math.PI + (Math.random() - 0.5) * 0.5;
+                const distance = 40 + Math.random() * 20; // Random distance between 40-60px
+                
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                
+                // Random animation delay for more organic feel
+                particle.style.animationDelay = Math.random() * 0.1 + 's';
+                
+                explosion.appendChild(particle);
+            }
+            
+            document.body.appendChild(explosion);
+            
+            // Remove explosion after animation
+            setTimeout(() => {
+                if (explosion.parentNode) {
+                    explosion.remove();
+                }
+            }, 600);
+        }
+
         // Copy function for button 4
         copyBtn.addEventListener('click', async (event) => {
             event.preventDefault();
@@ -1014,9 +1167,10 @@
             // Mark balloon as counted so it doesn't count as missed
             balloon.dataset.counted = 'true';
             
-            // Generate random multiplier between 0.1x and 1000x
-            const multiplier = 0.1 + Math.random() * 999.9; // 0.1 to 1000
-            const multiplierText = multiplier.toFixed(1) + 'x';
+            // Get balloon center for explosion position
+            const rect = balloon.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
             
             // Get balloon type for color
             const balloonType = balloon.dataset.balloonType;
@@ -1033,6 +1187,13 @@
             } else {
                 color = '#FF6B6B'; // Default red if something goes wrong
             }
+            
+            // Create explosion effect
+            createExplosion(centerX, centerY, color);
+            
+            // Generate random multiplier between 0.1x and 1000x
+            const multiplier = 0.1 + Math.random() * 999.9; // 0.1 to 1000
+            const multiplierText = multiplier.toFixed(1) + 'x';
             
             // Create pop effect with multiplier
             const popEffect = document.createElement('div');
